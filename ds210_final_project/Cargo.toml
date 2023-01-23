@@ -9,4 +9,6 @@ edition = "2021"
 csv = "1.1"
 serde = {version="1.0.152", features=["derive"]}
 rand="0.8.5"
+backtrace = "0.3.62"
+
 

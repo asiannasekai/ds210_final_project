@@ -18,27 +18,50 @@ fn read_file(path: &str) -> Vec<(usize, usize)> {
     let file = File::open(path).expect("file cannot open");
     let filereader = std::io::BufReader::new(file).lines();
     for line in filereader {  
-        let l = line.expect("Error");
-        let nodes: Vec<&str> = l.trim().split(' ').collect();
-        let node1: usize = nodes[0].parse().unwrap();
-        let node2: usize = nodes[1].parse().unwrap();
+        let linemsg = line.expect("Error");
+        let nodes: Vec<&str> = linemsg.trim().split(' ').collect();
+        let node1: usize = nodes[0].parse::<usize>().unwrap();
+        let node2: usize = nodes[1].parse::<usize>().unwrap();
         graphvec.push((node1, node2));
     }
     return graphvec;
 }
 
 fn read_file32(path: &str) -> Vec<(u32, u32)> {
-    let mut graphvec: Vec<(u32, u32)> = Vec::new();
+    let mut graphvec32: Vec<(u32, u32)> = Vec::new();
     let file = File::open(path).expect("file cannot open");
     let filereader = std::io::BufReader::new(file).lines();
     for line in filereader {  
-        let l = line.expect("Error");
-        let nodes: Vec<&str> = l.trim().split(' ').collect();
-        let node1: u32 = nodes[0].parse().unwrap();
-        let node2: u32 = nodes[1].parse().unwrap();
-        graphvec.push((node1, node2));
+        let linemsg = line.expect("Error");
+        let nodes: Vec<&str> = linemsg.trim().split(' ').collect();
+        let node1= nodes[0].parse::<u32>().unwrap();
+        let node2= nodes[1].parse::<u32>().unwrap();
+        graphvec32.push((node1, node2));
     }
-    return graphvec;
+    return graphvec32;
+}
+
+
+//Breadth search function that takes in a graph and returns a hashmap with the distances
+fn bfs(graph: &HashMap<u32, Vec<u32>>, start: u32) -> HashMap<u32, u32> {
+    let mut search = HashMap::new();
+    let mut graphqueue = VecDeque::new();
+
+    graphqueue.push_back(start);
+    search.insert(start, 0);
+
+    while !graphqueue.is_empty() {
+        let vertex = graphqueue.pop_front().unwrap();
+        let distance = *search.get(&vertex).unwrap();
+
+        for neighbor in graph.get(&vertex).unwrap() {
+            if !search.contains_key(neighbor) {
+                search.insert(*neighbor, distance + 1);
+               graphqueue.push_back(*neighbor);
+            }
+        }
+    }
+    search
 }
    
 
@@ -51,6 +74,15 @@ fn graphcreate(graphvec: &Vec<(u32, u32)>) -> HashMap<u32, Vec<u32>>{
     }
     graph
 }
+
+fn graphcreate2(graphvec: &Vec<(usize, usize)>) -> HashMap<usize, Vec<usize>>{
+    let mut graph = HashMap::new();
+    for &(a, b) in graphvec.iter() {
+        graph.entry(a).or_insert(vec![]).push(b);
+    }
+    graph
+}
+    
     
         
 
@@ -85,80 +117,52 @@ fn triangles(adj_list: &HashMap<usize, Vec<usize>>) -> usize {
     count / 6
 }
 
-fn bfs(graph: &HashMap<u32, Vec<u32>>, start: u32) {
-    let mut visited = HashSet::new();
-    let mut queue = VecDeque::new();
-
-    visited.insert(start);
-    queue.push_back(start);
-
-    while !queue.is_empty() {
-        let node = queue.pop_front().unwrap();
-        println!("{}", node);
-
-        for neighbor in &bfsgraph[node] {
-            if !visited.contains(neighbor) {
-                visited.insert(neighbor);
-                queue.push_back(neighbor);
-            }
-        }
-    }
-}
 
 
 
-fn six_deg(graph: &HashMap<&u32, Vec<&u32>>, start: &u32, end: u32) -> Option<usize> {
-    let mut visited = HashSet::new();
-    let mut queue = VecDeque::new();
-    let mut depth = 0;
+   
 
-    visited.insert(start);
-    queue.push_back((start, depth));
+            
+            
+        
 
-    while !queue.is_empty() {
-        let (node, current_depth) = queue.pop_front().unwrap();
-        depth = current_depth;
-        if node == end {
-            return Some(depth);
-        }
 
-        for neighbor in &graph[node] {
-            if !visited.contains(neighbor) {
-                visited.insert(neighbor);
-                queue.push_back((neighbor, depth+1));
-            }
-        }
-    }
+   
 
-    None
-}
 
 
 
 fn main() {
 
-    let file     = read_file32("googlegraph.txt");
-    let graph    = graphcreate(&file);
+    let file     = read_file("googlegraph.txt");
+    let file32= read_file32("googlegraph.txt");
+    let graph32  = graphcreate(&file32);
+    let graph    = graphcreate2(&file);
+    let distance_bds = bfs(&graph32,0);
 
- //BFS Code
+    println!("Graph: {:?}", graph32);
+    println!("Graph32: {:?}", graph32);
+
+
+
     
-    let bfsgraph = bfs(&graph, 0);
-    bfs(&graph, "");
+
+
 
  
 
 // Adjacency List
-    let edges = read_file("googlegraph.txt");
-    let graph_adj_list = adj_list(&edges);
+
+    let graph_adj_list = adj_list(&file);
     println!("Adjacency List: {:?}", graph_adj_list); 
 
 //Counting Triangles
-    let num_triangles = triangles(&graph_adj_list);
+    let triangle_count = triangles(&graph_adj_list);
+    println!("Triangles: {:?}", triangle_count);
 
-//six degrees of separation
-    let graph = HashMap::new();
-    let distance = six_deg(&graph, "0", "1000");   
-    println!("Distance: {:?}", distance);
+//6 degree of separation
+
+  
 
 
 }            
