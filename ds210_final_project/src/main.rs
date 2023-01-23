@@ -27,41 +27,32 @@ fn read_file(path: &str) -> Vec<(usize, usize)> {
     return graphvec;
 }
 
-    
+fn read_file32(path: &str) -> Vec<(u32, u32)> {
+    let mut graphvec: Vec<(u32, u32)> = Vec::new();
+    let file = File::open(path).expect("file cannot open");
+    let filereader = std::io::BufReader::new(file).lines();
+    for line in filereader {  
+        let l = line.expect("Error");
+        let nodes: Vec<&str> = l.trim().split(' ').collect();
+        let node1: u32 = nodes[0].parse().unwrap();
+        let node2: u32 = nodes[1].parse().unwrap();
+        graphvec.push((node1, node2));
+    }
+    return graphvec;
+}
+   
 
 
 //HashMap creation
-fn graphcreate(graph: &HashMap<&str, Vec<(usize, usize)>>) {
-        let mut graph = HashMap::new();
-        let file = File::open("googlegraph.txt").unwrap();
-        let filereader = std::io::BufReader::new(file).lines();
-        let mut graphvec = Vec::new();
-
-        for line in filereader {  
-            let l = line.expect("Error");
-            let nodes: Vec<&str> = l.trim().split(' ').collect();
-            let node1: usize = nodes[0].parse().unwrap();
-            let node2: usize = nodes[1].parse().unwrap();
-            graphvec.push((node1, node2));
-        
-        
-        let graphvec = graph.entry(node1).or_insert(Vec::new());
-        graphvec.push(node2);
-        }
-    
-        
-    
-    // Print out the graph
-    for(node, graphvec)in &graph  {
-        println!("{}: ", node);
-        for edge in graphvec {
-            print!("{} ", edge);
-        }
-        println!();
-       
+fn graphcreate(graphvec: &Vec<(u32, u32)>) -> HashMap<u32, Vec<u32>>{
+    let mut graph = HashMap::new();
+    for &(a, b) in graphvec.iter() {
+        graph.entry(a).or_insert(vec![]).push(b);
     }
+    graph
 }
-
+    
+        
 
 
 
@@ -94,7 +85,7 @@ fn triangles(adj_list: &HashMap<usize, Vec<usize>>) -> usize {
     count / 6
 }
 
-fn bfs(bfsgraph: &HashMap<&str, Vec<&str>>, start: &str) {
+fn bfs(graph: &HashMap<u32, Vec<u32>>, start: u32) {
     let mut visited = HashSet::new();
     let mut queue = VecDeque::new();
 
@@ -116,7 +107,7 @@ fn bfs(bfsgraph: &HashMap<&str, Vec<&str>>, start: &str) {
 
 
 
-fn six_deg(sixdgraph: &HashMap<&str, Vec<&str>>, start: &str, end: &str) -> Option<usize> {
+fn six_deg(graph: &HashMap<&u32, Vec<&u32>>, start: &u32, end: u32) -> Option<usize> {
     let mut visited = HashSet::new();
     let mut queue = VecDeque::new();
     let mut depth = 0;
@@ -131,7 +122,7 @@ fn six_deg(sixdgraph: &HashMap<&str, Vec<&str>>, start: &str, end: &str) -> Opti
             return Some(depth);
         }
 
-        for neighbor in &sixdgraph[node] {
+        for neighbor in &graph[node] {
             if !visited.contains(neighbor) {
                 visited.insert(neighbor);
                 queue.push_back((neighbor, depth+1));
@@ -146,11 +137,12 @@ fn six_deg(sixdgraph: &HashMap<&str, Vec<&str>>, start: &str, end: &str) -> Opti
 
 fn main() {
 
-    let file = File::open("googlegraph.txt");
-    let edges = File::open("googlegraph.txt");
+    let file     = read_file32("googlegraph.txt");
+    let graph    = graphcreate(&file);
 
  //BFS Code
-    let graph = HashMap::new();
+    
+    let bfsgraph = bfs(&graph, 0);
     bfs(&graph, "");
 
  
