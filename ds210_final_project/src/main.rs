@@ -121,7 +121,28 @@ fn triangles(adj_list: &HashMap<usize, Vec<usize>>) -> usize {
 
 
    
+fn sixdeg(graph: &Vec<(usize, usize)>, start: usize) -> Option<usize> {
+    let mut searched = HashSet::new();
+    let mut queue = VecDeque::new();
+    let mut depth=0;
 
+    searched.insert(start);
+    queue.push_back((start, depth));
+
+    while !queue.is_empty() {
+        let (searcjed, current_depth) = queue.pop_front().unwrap();
+        depth = current_depth;
+       
+        }
+
+        for &neighbor in &graph[&searched] {
+            if !searched.contains(neighbor) {
+                searched.insert(*neighbor);
+                queue.push_back((*neighbor, depth+1));
+            }
+        }
+        None
+    }
             
             
         
